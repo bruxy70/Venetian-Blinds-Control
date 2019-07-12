@@ -49,7 +49,7 @@ char payload_stop[] = "stop";
 
 
 // Changge these for your WIFI, IP and MQTT
-char _ssid_[] = "wifi_ssid";
+char _ssid1_[] = "wifi_ssid";
 char _password1_[] = "wifi_password";
 char OTA_password[] = "OTApassword"; // Only accepts [a-z][A-Z][0-9]
 char _mqtt_server_[] = "xxx.xxx.xxx.xxx";

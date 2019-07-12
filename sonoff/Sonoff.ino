@@ -3,7 +3,6 @@
 
  Generic 8285 module
  (or 8266 module,  FlashMode DOUT!!!!!)
- 
  1M (no SPIFFS)
  Reset method: ck
  
@@ -24,7 +23,7 @@ Tilt
 
 The position is based on measuring the time for the shuuer to go fully up and down (and to the open vent position and for tilting blades)
 
-Internally, the program works with position 0 - shutter up (open), 100 - shuuer down (closed). But for mqtt, it maps the numbers 0=closed, 100=open (can be changed through commenting _reverse_position_mapping_)
+Internally, the program works with position 0 - shutter up (open), 100 - shutter down (closed). But for mqtt, it maps the numbers 0=closed, 100=open (can be changed through commenting _reverse_position_mapping_)
 
 It can control 1 or 2 shutters - controlled by _two_covers_ (works with Sonoff 4ch)
 
@@ -32,16 +31,16 @@ Sample configuration
 cover:
   - platform: mqtt
     name: "MQTT Cover"
-    command_topic: "jakub/cover1/set"
-    state_topic: "jakub/cover1/state"
-    set_position_topic:  "jakub/cover1/position"
+    command_topic: "blinds/cover1/set"
+    state_topic: "blinds/cover1/state"
+    set_position_topic:  "blinds/cover1/position"
     payload_open: "open"
     payload_close: "close"
     payload_stop: "stop"
     state_open: 0
     state_closed: 100
-    tilt_command_topic: 'jakub/cover1/tilt'
-    tilt_status_topic: 'jakub/cover1/tilt-state'
+    tilt_command_topic: 'blinds/cover1/tilt'
+    tilt_status_topic: 'blinds/cover1/tilt-state'
  
 
 */
