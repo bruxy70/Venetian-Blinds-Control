@@ -4,21 +4,29 @@ Control Shutters or Venetian blinds via buttons and MQTT. Use 2 relays (up and d
 
 ## Getting Started
 
+## Built With
+
+* [Arduino](https://www.arduino.cc/en/Main/Software)
+
 ### Prerequisites
 
 * Add http://arduino.esp8266.com/stable/package_esp8266com_index.json to Preferences/Additional board manager
 * Add ESP8266 board
 * Add libraries
 
-### Installing
+### Building
 
 * Check instructions in sonoff.ino to configure project
 * Set paramaters in config.h
 * Build
 
-## Built With
+### Using
 
-* [Arduino](https://www.arduino.cc/en/Main/Software)
+* Developed for shuters controled by 2 switches - one moves shutter up, the second for down. They switch on an L-wire.
+* The project involves installing an ESP 8266 board with two relays, and connecting each L-wire to one relay
+* It supports either 1 shutter (2 relays) or 2 shutters (4 relays)
+* To use with Sonoff 4ch (or Sonoff 4ch pro):
+** sss
 
 ## Authors
 
