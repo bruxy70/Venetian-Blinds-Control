@@ -32,10 +32,6 @@ Control Shutters or Venetian blinds via buttons and MQTT. Use 2 relays (up and d
   * If you want to use the original wall switch, solder wires to the 4 buttons on Sonoff 4ch, and connect 1st switch between button 1 and GND and so on
   * The program will make sure that it will not connect relay 1&2 and relay 3&4 at the same time. If relay 1 is on and you want to activate relay 2, it will automatically disconnect relay 1 (connecting both wires for up and down simultaneously is often use to enter the shutter programming mode and coudl mess-up setting of the end positions).
 
-## Authors
+## Author
 
 * **Václav Chaloupka** - *Initial work* - [bruxy70](https://github.com/bruxy70)
-
-See also the list of [contributors](https://github.com/bruxy70/Venetian-Blinds-Control/contributors) who participated in this project.
-
-## Acknowledgments
