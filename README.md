@@ -26,7 +26,11 @@ Control Shutters or Venetian blinds via buttons and MQTT. Use 2 relays (up and d
 * The project involves installing an ESP 8266 board with two relays, and connecting each L-wire to one relay
 * It supports either 1 shutter (2 relays) or 2 shutters (4 relays)
 * To use with Sonoff 4ch (or Sonoff 4ch pro):
-** sss
+  * You need to have an N wire - connect it to one of the Sonoff N sockets
+  * Connect the common wire to the Sonoff In L socket (and to the C sockets if using Pro version)
+  * Connect the wire for shutter 1 up direction to Out 1 L socket, shutter 1 down to Out 2, shutter 2 up to Out 3 and shutter 2 down to Out 4
+  * If you want to use the original wall switch, solder wires to the 4 buttons on Sonoff 4ch, and connect 1st switch between button 1 and GND and so on
+  * The program will make sure that it will not connect relay 1&2 and relay 3&4 at the same time. If relay 1 is on and you want to activate relay 2, it will automatically disconnect relay 1 (connecting both wires for up and down simultaneously is often use to enter the shutter programming mode and coudl mess-up setting of the end positions).
 
 ## Authors
 
