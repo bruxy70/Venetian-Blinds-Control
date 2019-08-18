@@ -92,6 +92,7 @@ struct configuration {
   boolean two_covers;
   boolean vents;
   boolean reverse_position_mapping; // currently not used
+  boolean auto_hold_buttons;
   char host_name[25];
   char wifi_ssid1[25];
   char wifi_password1[25];
