@@ -143,6 +143,8 @@ void updateField() {
     strncpy(web_cfg.host_name,t_value.c_str(),24);
  } else if (t_field.equals("vents")) {
     web_cfg.vents = t_value.equals("true");
+ } else if (t_field.equals("auto_hold_buttons")) {
+    web_cfg.auto_hold_buttons = t_value.equals("true");  
  } else if (t_field.equals("tilt")) {
     web_cfg.tilt = t_value.equals("true");
  } else if (t_field.equals("two_covers")) {
@@ -226,6 +228,7 @@ void readConfig() {
   root["two_covers"] = web_cfg.two_covers?"true":"false";
   root["tilt"] = web_cfg.tilt?"true":"false";
   root["vents"] = web_cfg.vents?"true":"false";
+  root["auto_hold_buttons"] = web_cfg.auto_hold_buttons?"true":"false";
   root["wifi_ssid1"] = web_cfg.wifi_ssid1;
   root["wifi_password1"] = web_cfg.wifi_password1;
   root["wifi_ssid2"] = web_cfg.wifi_ssid2;

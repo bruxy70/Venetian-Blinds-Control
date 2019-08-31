@@ -52,6 +52,12 @@ void defaultConfig(configuration* c) {
   #else
     c->two_covers=false;
   #endif
+  #ifdef _auto_hold_buttons_
+    c->auto_hold_buttons=true;
+  #else
+    c->auto_hold_buttons=false;
+  #endif
+  
   strncpy(c->host_name,_host_name_,24);
   strncpy(c->wifi_ssid1,_ssid1_,24);
   strncpy(c->wifi_password1,_password1_,24);
@@ -104,6 +110,7 @@ void defaultConfig(configuration* c) {
 
 void copyConfig(configuration* from,configuration* to) {
   to->vents=from->vents;
+  to->auto_hold_buttons=from->auto_hold_buttons;
   to->tilt=from->tilt;
   to->two_covers=from->two_covers;
   strncpy(to->host_name,from->host_name,24);

@@ -486,7 +486,7 @@ function pushButton(b) {
   request.send();
   if(b==77)
     readConfig();
-  if(b==88) {
+  if(b==89) {
     location.href='/';
   }
 }
@@ -555,6 +555,7 @@ function readConfig() {
       document.getElementById("host_name").value = resp.host_name;
       document.getElementById("count").value = resp.two_covers=="true"?"2":"1";
       document.getElementById("vents").checked = resp.vents=="true";
+      document.getElementById("auto_hold_buttons").checked = resp.auto_hold_buttons=="true";
       document.getElementById("tilt").checked = resp.tilt=="true";
       document.getElementById("wifi_ssid1").value = resp.wifi_ssid1;
       document.getElementById("wifi_password1").value = resp.wifi_password1;
@@ -630,6 +631,7 @@ function readConfig() {
 <section class="container">
   <input class="checkbox" type="checkbox" name="vents" id="vents" onchange="sendData(this.id,this.checked);"> <label class="description" for="vents">Vents</label>
   <input class="checkbox" type="checkbox" name="tilt" id="tilt" onchange="sendData(this.id,this.checked);"> <label class="description" for="tilt">Tilt</label>
+  <input class="checkbox" type="checkbox" name="auto_hold_buttons" id="auto_hold_buttons" onchange="sendData(this.id,this.checked);"> <label class="description" for="auto_hold_buttons">Auto hold buttons</label>
   <label class="description" for="count"># of shutters:</label>
   <select class="full" name="count" id="count" onchange="sendData(this.id,this.value);">
     <option value="1">1</option>

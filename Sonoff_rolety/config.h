@@ -40,15 +40,15 @@ char _subscribe_reboot_[] = "blinds/cover/reboot";
 #define _Shutter1_duration_tilt_ 1650
 #define _Shutter2_duration_tilt_ 1650
 
-// if enabled, 0 is rolled in (open), 100 is fully rolled out (closed) - by default, Hassio considers 0=closed, 100=open - I think it does not make sense for covers
 #define _reverse_position_mapping_ 1
+#define _auto_hold_buttons_ 1
 
 char payload_open[] = "open";
 char payload_close[] = "close";
 char payload_stop[] = "stop";
 
 
-// Changge these for your WIFI, IP and MQTT
+// Change these for your WIFI, IP and MQTT
 char _ssid1_[] = "wifi_ssid";
 char _password1_[] = "wifi_password";
 char OTA_password[] = "OTApassword"; // Only accepts [a-z][A-Z][0-9]
@@ -67,8 +67,9 @@ char movementStopped[] = "stopped";
 #define update_interval_active 1000
 #define update_interval_passive 300000
 
+//Ignore pulses shorter than 100ms
+#define _button_delay_ 100
 
-// This is for Sonoff 4ch. Change if using a different device
 // Relay GPIO ports
 #define GPIO_REL1 12  // r1 up wire
 #define GPIO_REL2 5   // r1 down wire
@@ -76,12 +77,18 @@ char movementStopped[] = "stopped";
 #define GPIO_REL4 15  // r2 down wire
 
 // Buttons GPIO ports
-#define _GPIO_KEY1_ 0  // r1 up button
+#if defined(INSTANCE_GALERIE)
+  #define _GPIO_KEY1_ 3  // r1 up button (Rx)
+#else
+  #define _GPIO_KEY1_ 0  // r1 up button
+#endif
 #define _GPIO_KEY2_ 9  // r1 down button
 #define _GPIO_KEY3_ 10 // r2 up button
 #define _GPIO_KEY4_ 14 // r2 down button
 
+
 #define SLED 13  // Blue light (inverted)
+
 #define RX_PIN 1 // for external sensors - not used
 #define TX_PIN 3 // for external sensors - not used
 

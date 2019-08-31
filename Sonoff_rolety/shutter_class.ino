@@ -381,7 +381,8 @@ void Shutter::Process_key(boolean key_up, boolean key_down) {
       return; // Ignore if button down is pressed
     } else { // Button up released
       if (this->movement != stopped) {
-        if (( cfg.tilt && ((now - this->btnUp.pressed_timestamp)<duration_tilt)) || ( !cfg.tilt && ((now - this->btnUp.pressed_timestamp)>hold_button_delay)) ) {
+        // Ignore release - auto hold function
+        if (( !cfg.auto_hold_buttons || cfg.tilt && ((now - this->btnUp.pressed_timestamp)<duration_tilt)) || ( !cfg.tilt && ((now - this->btnUp.pressed_timestamp)>hold_button_delay)) ) {
           this->Update_position();
           this->Stop();
           #ifdef DEBUG
@@ -402,8 +403,8 @@ void Shutter::Process_key(boolean key_up, boolean key_down) {
         this->Start_down();
     } else { // Button down released
       if (this->movement != stopped) {
-
-        if ((cfg.tilt && ((now - this->btnDown.pressed_timestamp)<duration_tilt)) || ( !cfg.tilt && ((now - this->btnDown.pressed_timestamp)>hold_button_delay))) { 
+        // Ignore release - auto hold function
+        if ((!cfg.auto_hold_buttons || cfg.tilt && ((now - this->btnDown.pressed_timestamp)<duration_tilt)) || ( !cfg.tilt && ((now - this->btnDown.pressed_timestamp)>hold_button_delay))) { 
           this->Update_position();
           this->Stop();
           #ifdef DEBUG

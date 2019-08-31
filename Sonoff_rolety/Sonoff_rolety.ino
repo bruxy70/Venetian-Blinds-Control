@@ -1,6 +1,5 @@
 /*
  Sonoff 4ch (ESP8285) MQTT sensor for shutters
-
  Generic 8285 module
  (or 8266 module,  FlashMode DOUT!!!!!)
  1M (no SPIFFS)
@@ -8,7 +7,6 @@
  
  RX <-> RX !!!
  TX <-> TX !!!
-
 Functionality:
  Push button for <1s - cover will go till the end. If I hold it longer, shutter will stop when I release the button.
  When I push the button during movement, it will stop
@@ -16,17 +14,12 @@ Functionality:
 Roller shutters with horizontal vents:
  When I press button once, it will stop leaving the vents open. When I press it it again (or if the cover is past the open vents position), it will go till the end (both up and down)
  When I sent the cover to position 1, will will leave vents open
-
 Tilt
  For blids, there is a separate function to control tilt. When I stop the movement, it will automatically tilt to the tilt tilt before it started moving
  For blinds with tilt, the behaviour pushing button for <1s and > 1s works differently than for roller shuuers (<1s pushes are meant for tilting)
-
 The position is based on measuring the time for the shuuer to go fully up and down (and to the open vent position and for tilting blades)
-
 Internally, the program works with position 0 - shutter up (open), 100 - shutter down (closed). But for mqtt, it maps the numbers 0=closed, 100=open (can be changed through commenting _reverse_position_mapping_)
-
 It can control 1 or 2 shutters - controlled by _two_covers_ (works with Sonoff 4ch)
-
 Sample configuration
 cover:
   - platform: mqtt
@@ -42,7 +35,6 @@ cover:
     tilt_command_topic: 'blinds/cover1/tilt'
     tilt_status_topic: 'blinds/cover1/tilt-state'
  
-
 */
 
 //#define DEBUG 1
@@ -64,6 +56,7 @@ cover:
 unsigned long lastUpdate = 0; // timestamp - last MQTT update
 unsigned long lastCallback = 0; // timestamp - last MQTT callback received
 unsigned long lastWiFiDisconnect=0;
+unsigned long lastWiFiConnect=0;
 unsigned long lastMQTTDisconnect=0; // last time MQTT was disconnected
 unsigned long WiFiLEDOn=0;
 unsigned long k1_up_pushed=0;
@@ -111,12 +104,22 @@ void setup_wifi() {
 //  wifiMulti.addAP(cfg.wifi_ssid2, cfg.wifi_password2);
   int i=0;
 //  while (wifiMulti.run() != WL_CONNECTED && i<20) {
-  while (WiFi.status() != WL_CONNECTED && i<20) {
+  while (WiFi.status() != WL_CONNECTED && i<60) {
     i++;
     delay(500);
     #ifdef DEBUG
       Serial.print(".");
     #endif
+  }
+  if (WiFi.status() != WL_CONNECTED && (strcmp(cfg.wifi_ssid1,_ssid1_)!=0 || strcmp(cfg.wifi_password1,_password1_)!=0))  {
+    #ifdef DEBUG
+       Serial.println();
+       Serial.print("Loading defaults and restarting...");
+    #endif
+    defaultConfig(&cfg);
+    saveConfig();
+    Restart();
+    delay(10000);
   }
   MDNS.begin(cfg.host_name);
 
@@ -557,10 +560,11 @@ void timeDiff(char *buf,size_t len,unsigned long lastUpdate){
 * M A I N   A R D U I N O   L O O P  
 ***************************************/
 void loop() {
-  
+  unsigned long now = millis();
   checkTimers();
   checkSensors();
   if (WiFi.status() == WL_CONNECTED) {
+    lastWiFiConnect=now;  // Not used at the moment
     ArduinoOTA.handle(); // OTA first
     if (mqqtClient.loop()) {
        publishSensor();
@@ -571,7 +575,7 @@ void loop() {
       server.handleClient();         // Web handling
     #endif
   } else {
-    lastWiFiDisconnect=millis();
+    lastWiFiDisconnect=now;
     if (abs(WiFiLEDOn-lastWiFiDisconnect)>2000) {
       digitalWrite(SLED, LOW);   // Turn the Status Led on
       WiFiLEDOn=lastWiFiDisconnect;
