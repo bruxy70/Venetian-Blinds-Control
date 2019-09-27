@@ -196,7 +196,6 @@ class AutoAdjustGalleryCover(hass.Hass):
         all_position_adjusted = all_tilt_position_adjusted = False
         for cover in self._covers:
             position_adjusted = tilt_position_adjusted = False
-            self.set_state(cover, attributes={'mode': f'{mode}'})
             try:
                 current_position = self.get_state(
                     cover,
