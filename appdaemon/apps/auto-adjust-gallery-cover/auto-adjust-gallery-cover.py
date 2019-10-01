@@ -86,14 +86,6 @@ class Mode(Enum):
     OPEN = 4
 
 
-def isTime(text):
-    try:
-        datetime.strptime(text, '%H:%M')
-        return True
-    except ValueError:
-        return False
-
-
 class AutoAdjustGalleryCover(hass.Hass):
     def initialize(self):
         APP_SCHEMA = vol.Schema({
@@ -130,7 +122,6 @@ class AutoAdjustGalleryCover(hass.Hass):
         except vol.Invalid as err:
             self.error(f"Invalid format: {err}", level='ERROR')
             return
-        self.log(f'Initialized entity_id={config.get("entity_id")}', 'DEBUG')
         self._inside_temperature = config.get(ATTR_INSIDE_TEMPERATURE)
         self._outside_temperature = config.get(ATTR_OUTSIDE_TEMPERATURE)
         self._weather = config.get(ATTR_WEARHER)
