@@ -166,11 +166,11 @@ class Cover:
         )
         position_adjusted = False
         try:
-            current_position = self.get_state(
+            current_position = self.__hassio.get_state(
                 self.__entity_id, attribute="current_position"
             )
             if self.__tilting:
-                current_tilt_position = self.get_state(
+                current_tilt_position = self.__hassio.get_state(
                     self.__entity_id, attribute="current_tilt_position"
                 )
         except:
@@ -273,7 +273,7 @@ class Cover:
         )
         return
 
-    def set_tilt_position(self):
+    def set_tilt_position(self, kwargs):
         self.__hassio.call_service(
             "cover/set_cover_tilt_position",
             entity_id=self.__entity_id,
