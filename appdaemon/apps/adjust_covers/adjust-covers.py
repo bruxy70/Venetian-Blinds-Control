@@ -164,7 +164,7 @@ class Cover:
             f"[{self.__position}/{self.__tilt_position}]",
             level=LOG_LEVEL
         )
-        position_adjusted = False
+        position_adjusted = tilt_position_adjusted = False
         try:
             current_position = self.__hassio.get_state(
                 self.__entity_id, attribute="current_position"
