@@ -8,7 +8,6 @@ from datetime import datetime, time, timedelta
 Automatically adjust the gallery shutter position and tilt_position 
 based on the sun elevation, sun azimuth, temperature instide and outside
 Arguments:
-- enable_automation         - input boolean to disable the automation
 - outside_temperature       - outside temperature sensor
 - weather                   - weather entity (check state for clouds)
 - winter_treshold           - outside temperature theshold to switch to the winter_mode
@@ -16,6 +15,7 @@ Arguments:
 - heating_mode              - if defined - winter_mode will be On if the heating_mode is not 'Off'
 - covers:                   - (required) list of rooms, each can have number if covers
   - entity_id:              - (required) cover entity ID
+  - enable_automation         - input boolean to disable the automation
     inside_temperature      - room temperature sensor
     start_at                - do not run before this time (reflects sun azimuth)
     stop_at                 - do not run after this time (reflects sun azimuth)
@@ -30,12 +30,12 @@ configuration example (in AppDaemon's apps.yaml):
 adjust_covers:
     module: adjust-covers
     class: AdjustCovers
-    enable_automation: input_boolean.automation_cover_galerie
     outside_temperature: sensor.teplota_venku
     heating_mode: input_select.topeni
     weather: weather.dark_sky
     covers:
     - entity_id: cover.galerie_vlevo
+      enable_automation: input_boolean.automation_cover_galerie
       inside_temperature: sensor.teplota_uvnitr
       stop_at: '15:00'
       start_at: '8:00'
@@ -43,6 +43,7 @@ adjust_covers:
       max_azimuth: 210
       tilting: True
     - entity_id: cover.galerie_vpravo
+      enable_automation: input_boolean.automation_cover_galerie
       inside_temperature: sensor.teplota_uvnitr
       stop_at: '15:00'
       start_at: '8:00'
@@ -117,6 +118,7 @@ class Cover:
     def __init__(self, hassio, config):
         self.__hassio = hassio
         self.__entity_id = config.get(ATTR_ENTITY_ID)
+        self.__enable_automations = config.get(ATTR_ENABLE_AUTOMATION)
         self.__inside_temperature = config.get(ATTR_INSIDE_TEMPERATURE)
         self.__start_at = config.get(ATTR_START_AT)
         self.__stop_at = config.get(ATTR_STOP_AT)
@@ -125,7 +127,6 @@ class Cover:
         self.__min_azimuth = config.get(ATTR_MIN_AZIMITH)
         self.__max_azimuth = config.get(ATTR_MAX_AZIMUTH)
         self.__tilting = config.get(ATTR_TILTING)
-        self.__inside_temperatre = None
 
     def update_cover(
         self,
@@ -136,19 +137,24 @@ class Cover:
         is_winter,
         winter_max_temperature,
     ):
+        if (
+            self.__enable_automations is not None
+            and self.__hassio.get_state(self.__enable_automations).lower() == "off"
+        ):
+            return
         now = datetime.now().time()
         if self.__start_at is not None and now < self.__start_at:
             return
         if self.__stop_at is not None and now >= self.__stop_at:
             return
-        self.__get_inside_temperature()
+        inside_temperature = self.__get_inside_temperature()
         mode = self.__get_mode(
-            sun_elevation, sun_azimuth, is_winter, is_suny, winter_max_temperature
+            sun_elevation, sun_azimuth, is_winter, is_suny, winter_max_temperature, inside_temperature
         )
         self.__calculate_positions(mode, sun_elevation)
         self.__hassio.log(
             f"Updating {self.__entity_id} cover:\n"
-            f"temperature_inside=[{self.__inside_temperature}],"
+            f"temperature_inside=[{inside_temperature}],"
             f"temperature_outside=[{outside_temperature}]\n"
             f"sun_elevation=[{sun_elevation}],"
             f"sun_azimuth=[{sun_azimuth}]\n"
@@ -212,7 +218,7 @@ class Cover:
             )
 
     def __get_inside_temperature(self):
-        self.__inside_temperature = float(
+        return float(
             self.__hassio.get_state(self.__inside_temperature)
         )
 
@@ -242,7 +248,7 @@ class Cover:
                     )
 
     def __get_mode(
-        self, sun_elevation, sun_azimuth, is_winter, is_suny, winter_max_temperature
+        self, sun_elevation, sun_azimuth, is_winter, is_suny, winter_max_temperature, inside_temperature
     ):
         if sun_elevation < 0:
             return Mode.SHUT
@@ -252,7 +258,7 @@ class Cover:
             or not is_suny
         ):
             return Mode.FIXED_OPEN
-        if is_winter and self.__inside_temperature < winter_max_temperature:
+        if is_winter and inside_temperature < winter_max_temperature:
             return Mode.OPEN
         if self.__tilting:
             return Mode.VARIABLE_BLOCKING
@@ -281,6 +287,7 @@ class AdjustCovers(hass.Hass):
         COVER_SCHEMA = vol.Schema(
             {
                 vol.Required(ATTR_ENTITY_ID): vol_help.existing_entity_id(self),
+                vol.Optional(ATTR_ENABLE_AUTOMATION): vol_help.existing_entity_id(self),
                 vol.Optional(ATTR_INSIDE_TEMPERATURE): vol_help.existing_entity_id(
                     self
                 ),
@@ -299,7 +306,6 @@ class AdjustCovers(hass.Hass):
             {
                 vol.Required("module"): str,
                 vol.Required("class"): str,
-                vol.Optional(ATTR_ENABLE_AUTOMATION): vol_help.existing_entity_id(self),
                 vol.Optional(ATTR_OUTSIDE_TEMPERATURE): vol_help.existing_entity_id(
                     self
                 ),
@@ -326,7 +332,6 @@ class AdjustCovers(hass.Hass):
             return
         self.__outside_temperature = config.get(ATTR_OUTSIDE_TEMPERATURE)
         self.__weather = config.get(ATTR_WEARHER)
-        self.__enable_automations = config.get(ATTR_ENABLE_AUTOMATION)
         self.__winter_treshold = config.get(ATTR_WINTER_TRESHOLD)
         self.__winter_max_temperature = config.get(ATTR_WINTER_MAX_TEMPERATURE)
         self.__heating_mode = config.get(ATTR_HEATING_MODE)
@@ -347,11 +352,6 @@ class AdjustCovers(hass.Hass):
 
     def update_covers(self, kwargs):
         """This is run every 15 minutes to trigger cover update"""
-        if (
-            self.__enable_automations is not None
-            and self.get_state(self.__enable_automations).lower() == "off"
-        ):
-            return
         if self.sun_down():
             return
         sun_elevation = float(self.get_state("sun.sun", attribute="elevation"))
