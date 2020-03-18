@@ -159,10 +159,10 @@ class Cover:
             f"sun_elevation=[{sun_elevation}],"
             f"sun_azimuth=[{sun_azimuth}]\n"
             f"is_suny=[{is_suny}],"
-            f"is_winter=[{is_winter}]\n",
+            f"is_winter=[{is_winter}]\n"
             f"{mode}: new position/tilt: "
             f"[{self.__position}/{self.__tilt_position}]",
-            level=LOG_LEVEL,
+            level=LOG_LEVEL
         )
         position_adjusted = False
         try:
