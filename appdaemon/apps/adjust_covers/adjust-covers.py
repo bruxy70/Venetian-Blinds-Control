@@ -213,6 +213,8 @@ class Cover:
         if position_adjusted or tilt_position_adjusted:
             self.__hassio.call_service(
                 "logbook/log",
+                # entity_id=self.__entity_id,
+                # domain='cover',
                 name=self.__entity_id,
                 message=f"{adjustments_made}, ({mode})",
             )
