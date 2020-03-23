@@ -35,9 +35,7 @@ if ready:
                 'entity_id':entity_id,
                 'position':new_position})
             hass.services.call('logbook','log',{
-                'name':'{}'.format(entity_id),
-                # 'entity_id':entity_id,
-                # 'domain':'cover',
+                'name':'Cover {}'.format(entity_id),
                 'message':'has been set to position {} {}'.format(new_position,message)})
     elif position[0]=='+':
         new_position=int(position[1:])
@@ -46,18 +44,14 @@ if ready:
                 'entity_id':entity_id,
                 'position':new_position})
             hass.services.call('logbook','log',{
-                'name':'{}'.format(entity_id),
-                # 'entity_id':entity_id,
-                # 'domain':'cover',
+                'name':'Cover {}'.format(entity_id),
                 'message':'has been set to position {} {}'.format(new_position,message)})
     else:
         new_position=int(position)
-        if abs(new_position - current_position)> ADJUST_THRESHOLD:B
+        if abs(new_position - current_position)> ADJUST_THRESHOLD:
             hass.services.call('cover', 'set_cover_position', {        
                 'entity_id':entity_id,
                 'position':new_position})
             hass.services.call('logbook','log',{
-                'name':'{}'.format(entity_id),
-                # 'entity_id':entity_id,
-                # 'domain':'cover',
+                'name':'Cover {}'.format(entity_id),
                 'message':'has been set to position {} {}'.format(new_position,message)})
