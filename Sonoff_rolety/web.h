@@ -21,7 +21,8 @@ void handleUpgradePath();
 /*   M A I N   */
 /*             */
 /***************/
-const char MAIN_page[] PROGMEM = R"#(
+//const char MAIN_page[] PROGMEM = R"#(
+const char MAIN_page[] = R"#(
 <!DOCTYPE html>
 <html>
 <head>
