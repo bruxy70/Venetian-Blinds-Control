@@ -21,27 +21,26 @@ void readMain() {
   char buf1[25];
   char buf2[25];
   
-  StaticJsonBuffer<700> jsonBuffer;   // normal 464
-  JsonObject& root = jsonBuffer.createObject();
+  DynamicJsonDocument root(700);   // normal 464
 
-  JsonArray& keys = root.createNestedArray("keys");
+  JsonArray keys = root.createNestedArray("keys");
 
   keys.add(r1.btnUp.pressed?"Pressed":String(r1.btnUp.counter));
   keys.add(r1.btnDown.pressed?"Pressed":String(r1.btnDown.counter));
   keys.add(r2.btnUp.pressed?"Pressed":String(r2.btnUp.counter));
   keys.add(r2.btnDown.pressed?"Pressed":String(r2.btnDown.counter));
 
-  JsonArray& movement = root.createNestedArray("movement");
+  JsonArray movement = root.createNestedArray("movement");
   movement.add(r1.Movement());
   movement.add(r2.Movement());
 
-  JsonArray& position = root.createNestedArray("position");
+  JsonArray position = root.createNestedArray("position");
   position.add(r1.getPosition());
   position.add(r2.getPosition());
   //position.add(map(r1.getPosition(),0,100,100,0));
   //position.add(map(r2.getPosition(),0,100,100,0));
 
-  JsonArray& tilt= root.createNestedArray("tilt");
+  JsonArray tilt= root.createNestedArray("tilt");
   tilt.add(r1.getTilt());
   tilt.add(r2.getTilt());
   
@@ -80,12 +79,10 @@ void readMain() {
   }
 
   String out;
-  root.prettyPrintTo(out);
+  serializeJson(root,out);
 #ifdef DEBUG_updates
   Serial.println(out);
 #endif  
-  
-  jsonBuffer.clear(); 
   server.send(200, "text/plane", out); //Send values to client ajax request
 }
 
@@ -222,8 +219,7 @@ void updateField() {
 
 void readConfig() {
   
-  StaticJsonBuffer<1500> jsonBuffer;   // normal 1279 (but can configure longer strings, so leave it)
-  JsonObject& root = jsonBuffer.createObject();
+  DynamicJsonDocument root(1500);   // normal 1279 (but can configure longer strings, so leave it)
   root["host_name"] = web_cfg.host_name;
   root["two_covers"] = web_cfg.two_covers?"true":"false";
   root["tilt"] = web_cfg.tilt?"true":"false";
@@ -264,11 +260,10 @@ void readConfig() {
   root["GPIO_KEY4"] = web_cfg.GPIO_KEY4;
   
   String out;
-  root.prettyPrintTo(out); 
+  serializeJson(root,out);
 #ifdef DEBUG_updates
   Serial.println(out);
 #endif  
-  jsonBuffer.clear(); 
   server.send(200, "text/plane", out); //Send values to client ajax request
 }
 #endif
