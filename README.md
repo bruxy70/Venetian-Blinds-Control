@@ -42,7 +42,91 @@ cover:
       - switch.turn_off: relay2
 ```
 
-There will be also a video on my YouTube channel, explaining the standard Time Based Cover, and this one as well.
+To control the blinds by the wall switch, configure a binary switch with action to open and close them.
+```yaml
+  - id: key1
+    platform: gpio
+    pin:
+      number: ${key1_gpio}
+      mode: INPUT_PULLUP
+      inverted: True
+    on_press:
+      then:
+        - cover.open: cover1
+    on_release:
+      then:
+        - cover.stop: cover1
+  - id: key2
+    platform: gpio
+    pin:
+      number: ${key2_gpio}
+      mode: INPUT_PULLUP
+      inverted: True
+    on_press:
+      then:
+        - cover.close: cover1
+    on_release:
+      then:
+        - cover.stop: cover1
+```
+
+I use a more advanced version, that will atomatically stop the cover when I hold it for a short time (less than 1s). If I hold it longer, it will keep running until the cover is fully open or closed (or unil I shortly press one of teh buttons). So for tilting it works as above. But to open or close it fully, you can release the button after 1s and it will continue moving.
+
+```yaml
+  - id: key1
+    platform: gpio
+    pin:
+      number: ${key1_gpio}
+      mode: INPUT_PULLUP
+      inverted: True
+    on_press:
+      then:
+        - cover.open: cover1
+        - wait_until:
+            condition: 
+                binary_sensor.is_off: key1
+            timeout: 1s
+        - if:
+            condition:
+                binary_sensor.is_off: key1
+            then:
+                - cover.stop: cover1
+  - id: key2
+    platform: gpio
+    pin:
+      number: ${key2_gpio}
+      mode: INPUT_PULLUP
+      inverted: True
+    on_press:
+      then:
+        - cover.close: cover1
+        - wait_until:
+            condition: 
+                binary_sensor.is_off: key2
+            timeout: 1s
+        - if:
+            condition:
+                binary_sensor.is_off: key2
+            then:
+                - cover.stop: cover1
+```
+
+For the regular roller shades I use the opposite logic - short press will fully open or close the cover. Holding the button longer will stop the cover after releasing it. This is done by adding a separate action for a long press. This would not make sense for venetian blades - as it would not allow controlling the tilt.
+
+```yaml
+    on_multi_click:
+    - timing:
+        - ON for at least 500ms
+      then:
+        - cover.open: cover1
+        - wait_until:
+            condition:
+              binary_sensor.is_off: key1
+        - cover.stop: cover1
+```
+
+There are also videos on my YouTube channel, explaining the standard Time Based Cover, and this one as well.
+(https://youtu.be/tg3nOoBFJLU and https://youtu.be/dk5yDBRHhbQ)
 
 ## Legacy - Arduino code (not maintained)
 
