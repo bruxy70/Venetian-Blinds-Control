@@ -24,8 +24,6 @@ void VenetianBlinds::setup() {
         this->position = 0.0;
         this->tilt = 0.0;
     }
-        exact_pos = this->position;
-        exact_tilt = this->tilt;
 }
 
 CoverTraits VenetianBlinds::get_traits() {
@@ -37,87 +35,118 @@ CoverTraits VenetianBlinds::get_traits() {
 }
 
 void VenetianBlinds::control(const CoverCall &call) {
-    if (call.get_tilt().has_value()) {
-        int new_tilt = *call.get_tilt()*100;
-        relative_tilt = exact_tilt - new_tilt;
-        relative_pos = 0;
-        last_position_update = millis();
-    }
-    if (call.get_position().has_value()) {
-        int new_pos = *call.get_position()*100;
-        relative_pos = exact_pos - new_pos;
-        relative_tilt = 0;
-        last_position_update = millis();
-    }
     if (call.get_stop()) {
-        relative_pos = 0;
-        relative_tilt = 0;
-        this->stop_trigger->trigger();
-        this->current_action = COVER_OPERATION_IDLE;
-        this->position = exact_pos/100.0;
-        this->tilt = exact_tilt/100.0;
+        this->start_direction_(COVER_OPERATION_IDLE);
         this->publish_state();
     }
+    if (call.get_position().has_value()) {
+        auto pos = *call.get_position();
+        if (pos != this->position) {
+            auto op = pos < this->position ? COVER_OPERATION_CLOSING : COVER_OPERATION_OPENING;
+            this->target_position_ = pos;
+            this->start_direction_(op);
+        }
+    }
 }
+
 void VenetianBlinds::loop() {
-    uint32_t current_time = millis();
-    if(relative_pos > 0 || relative_tilt < 0) {
-        if(this->current_action != COVER_OPERATION_CLOSING) {
-            this->close_trigger->trigger();
-            this->current_action = COVER_OPERATION_CLOSING;
-        }
-        if(current_time - last_tilt_update >= (this->tilt_duration / 100)) {
-            last_tilt_update = current_time;
-            relative_tilt=clamp(relative_tilt+1,-100,0);
-            exact_tilt=clamp(exact_tilt+1,0,100);
-        }
-        if(current_time - last_position_update >= (this->open_duration / 100)) {
-            last_position_update = current_time;
-            relative_pos=clamp(relative_pos-1,0,100);
-            exact_pos--;
-            if(exact_pos % 5 == 0) {
-                this->position = exact_pos/100.0;
-                this->tilt = exact_tilt/100.0;
-                this->publish_state();
-            }
-        }
-        if(relative_pos == 0 && relative_tilt == 0) {
-            this->stop_trigger->trigger();
-            this->current_action = COVER_OPERATION_IDLE;
-            this->position = exact_pos/100.0;
-            this->tilt = exact_tilt/100.0;
-            this->publish_state();
-        }
+    if (this->current_operation == COVER_OPERATION_IDLE)
+        return;
+
+    const uint32_t now = millis();
+
+    // Recompute position every loop cycle
+    this->recompute_position_();
+
+    if (this->is_at_target_()) {
+        this->start_direction_(COVER_OPERATION_IDLE);
+        this->publish_state();
     }
-    else if(relative_pos < 0 || relative_tilt > 0) {
-        if(this->current_action != COVER_OPERATION_OPENING) {
-            this->open_trigger->trigger();
-            this->current_action = COVER_OPERATION_OPENING;
-        }
-        if(current_time - last_tilt_update >= (this->tilt_duration / 100)) {
-            last_tilt_update = current_time;
-            relative_tilt=clamp(relative_tilt-1,0,100);
-            exact_tilt=clamp(exact_tilt-1,0,100);
-        }
-        if(current_time - last_position_update >= (this->close_duration / 100)) {
-            last_position_update = current_time;
-            relative_pos=clamp(relative_pos+1,-100,0);
-            exact_pos++;
-            if(exact_pos % 5 == 0) {
-                this->position = exact_pos/100.0;
-                this->tilt = exact_tilt/100.0;
-                this->publish_state();
-            }
-        }
-        if(relative_pos == 0 && relative_tilt == 0) {
-            this->stop_trigger->trigger();
-            this->current_action = COVER_OPERATION_IDLE;
-            this->position = exact_pos/100.0;
-            this->tilt = exact_tilt/100.0;
-            this->publish_state();
-        }
+
+    // Send current position every second
+    if (now - this->last_publish_time_ > 1000) {
+        this->publish_state(false);
+        this->last_publish_time_ = now;
     }
-};
+}
+
+void VenetianBlinds::stop_prev_trigger_() {
+  if (this->prev_command_trigger_ != nullptr) {
+    this->prev_command_trigger_->stop_action();
+    this->prev_command_trigger_ = nullptr;
+  }
+}
+
+bool VenetianBlinds::is_at_target_() const {
+  switch (this->current_operation) {
+    case COVER_OPERATION_OPENING:
+      return this->position >= this->target_position_;
+    case COVER_OPERATION_CLOSING:
+      return this->position <= this->target_position_;
+    case COVER_OPERATION_IDLE:
+    default:
+      return true;
+  }
+}
+
+void VenetianBlinds::start_direction_(CoverOperation dir) {
+  if (dir == this->current_operation && dir != COVER_OPERATION_IDLE)
+    return;
+
+  this->recompute_position_();
+  Trigger<> *trig;
+  switch (dir) {
+    case COVER_OPERATION_IDLE:
+      trig = this->stop_trigger;
+      break;
+    case COVER_OPERATION_OPENING:
+      this->last_operation_ = dir;
+      trig = this->open_trigger;
+      break;
+    case COVER_OPERATION_CLOSING:
+      this->last_operation_ = dir;
+      trig = this->close_trigger;
+      break;
+    default:
+      return;
+  }
+
+  this->current_operation = dir;
+
+  const uint32_t now = millis();
+  this->start_dir_time_ = now;
+  this->last_recompute_time_ = now;
+
+  this->stop_prev_trigger_();
+  trig->trigger();
+  this->prev_command_trigger_ = trig;
+}
+
+void VenetianBlinds::recompute_position_() {
+  if (this->current_operation == COVER_OPERATION_IDLE)
+    return;
+
+  float dir;
+  float action_dur;
+  switch (this->current_operation) {
+    case COVER_OPERATION_OPENING:
+      dir = 1.0f;
+      action_dur = this->open_duration;
+      break;
+    case COVER_OPERATION_CLOSING:
+      dir = -1.0f;
+      action_dur = this->close_duration;
+      break;
+    default:
+      return;
+  }
+
+  const uint32_t now = millis();
+  this->position += dir * (now - this->last_recompute_time_) / action_dur;
+  this->position = clamp(this->position, 0.0f, 1.0f);
+
+  this->last_recompute_time_ = now;
+}
 
 }
 }
