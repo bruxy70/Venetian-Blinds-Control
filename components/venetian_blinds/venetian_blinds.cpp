@@ -13,9 +13,10 @@ void VenetianBlinds::dump_config() {
     LOG_COVER("", "Venetian Blinds", this);
     ESP_LOGCONFIG(TAG, "  Open Duration: %.1fs", this->open_duration / 1e3f);
     ESP_LOGCONFIG(TAG, "  Close Duration: %.1fs", this->close_duration / 1e3f);
+    ESP_LOGCONFIG(TAG, "  Tilt Duration: %.1fs", this->tilt_duration / 1e3f);
 }
 
-void VenetianBlinds::setup() {   
+void VenetianBlinds::setup() {
     auto restore = this->restore_state_();
     if (restore.has_value()) {
         restore->apply(this);
@@ -87,7 +88,7 @@ void VenetianBlinds::loop() {
             this->tilt = exact_tilt/100.0;
             this->publish_state();
         }
-    } 
+    }
     else if(relative_pos < 0 || relative_tilt > 0) {
         if(this->current_action != COVER_OPERATION_OPENING) {
             this->open_trigger->trigger();
