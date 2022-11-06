@@ -53,8 +53,18 @@ void VenetianBlinds::control(const CoverCall &call) {
     if (call.get_position().has_value()) {
         auto requested_position = *call.get_position();
         if (requested_position != this->position) {
-            auto operation = requested_position < this->position ? COVER_OPERATION_CLOSING : COVER_OPERATION_OPENING;
-            auto operation_duration = requested_position < this->position ? this->open_net_duration_ : this->close_net_duration_;
+            cover::CoverOperation operation;
+            uint32_t operation_duration;
+            if (requested_position < this->position) {
+               operation = COVER_OPERATION_CLOSING;
+               operation_duration = this->open_net_duration_;
+               this->target_tilt_ = 0.0f;
+            } else {
+               operation = COVER_OPERATION_OPENING;
+               operation_duration = this->close_net_duration_;
+               this->target_tilt_ = 1.0f;
+            }
+
             this->target_position_ = requested_position * operation_duration;
             this->start_direction_(operation);
         }
@@ -63,6 +73,7 @@ void VenetianBlinds::control(const CoverCall &call) {
         auto requested_tilt = *call.get_tilt();
         if (requested_tilt != this->tilt) {
             auto operation = requested_tilt < this->tilt ? COVER_OPERATION_CLOSING : COVER_OPERATION_OPENING;
+            this->target_position_ = this->exact_position_;
             this->target_tilt_ = requested_tilt * this->tilt_duration;
             this->start_direction_(operation);
         }
