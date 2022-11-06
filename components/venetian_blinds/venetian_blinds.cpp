@@ -54,7 +54,15 @@ void VenetianBlinds::control(const CoverCall &call) {
         auto pos = *call.get_position();
         if (pos != this->position) {
             auto op = pos < this->position ? COVER_OPERATION_CLOSING : COVER_OPERATION_OPENING;
-            this->target_position_ = pos;
+            this->target_position_ = pos * this->close_net_duration_; // TODO: FIXME to use based on operation
+            this->start_direction_(op);
+        }
+    }
+    if(call.get_tilt().has_value()) {
+        auto tilt = *call.get_tilt();
+        if (tilt != this->tilt) {
+            auto op = tilt < this->tilt ? COVER_OPERATION_CLOSING : COVER_OPERATION_OPENING;
+            this->target_tilt_ = tilt * this->tilt_duration;
             this->start_direction_(op);
         }
     }
@@ -138,24 +146,34 @@ void VenetianBlinds::recompute_position_() {
     return;
 
   float dir;
-  float action_dur;
+  uint32_t action_dur;
+  uint32_t tilt_boundary;
   switch (this->current_operation) {
     case COVER_OPERATION_OPENING:
       dir = 1.0f;
-      action_dur = this->open_duration;
+      action_dur = this->open_net_duration_;
+      tilt_boundary = this->tilt_duration;
       break;
     case COVER_OPERATION_CLOSING:
       dir = -1.0f;
-      action_dur = this->close_duration;
+      action_dur = this->close_net_duration_;
+      tilt_boundary = 0;
       break;
     default:
       return;
   }
 
   const uint32_t now = millis();
-  this->position += dir * (now - this->last_recompute_time_) / action_dur;
-  this->position = clamp(this->position, 0.0f, 1.0f);
+  this->exact_tilt_ += dir * (now - this->last_recompute_time_);
+  this->exact_tilt_ = clamp(this->exact_tilt_, uint32_t(0), this->tilt_duration);
+  const uint32_t tilt_overflow = dir * (this->tilt - tilt_boundary);
+  if (tilt_overflow > 0) {
+    this->exact_position_ += dir * tilt_overflow;
+    this->exact_position_ = clamp(this->exact_position_, uint32_t(0), action_dur);
+  }
 
+  this->position = this->exact_position_ / action_dur;
+  this->tilt = this->exact_tilt_ / this->tilt_duration;
   this->last_recompute_time_ = now;
 }
 
