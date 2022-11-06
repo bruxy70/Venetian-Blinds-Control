@@ -32,12 +32,12 @@ class VenetianBlinds : public Component, public cover::Cover {
     uint32_t start_dir_time_{0};
     uint32_t last_recompute_time_{0};
     uint32_t last_publish_time_{0};
-    uint32_t exact_position_{0};
-    uint32_t exact_tilt_{0};
     uint32_t open_net_duration_;
     uint32_t close_net_duration_;
     uint32_t target_position_{0};
     uint32_t target_tilt_{0};
+    int exact_position_{0};
+    int exact_tilt_{0};
 
     void stop_prev_trigger_();
     bool is_at_target_() const;

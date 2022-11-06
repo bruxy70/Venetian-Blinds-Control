@@ -145,18 +145,18 @@ void VenetianBlinds::recompute_position_() {
   if (this->current_operation == COVER_OPERATION_IDLE)
     return;
 
-  float dir;
-  uint32_t action_dur;
-  uint32_t tilt_boundary;
+  int direction;
+  int action_duration;
+  int tilt_boundary;
   switch (this->current_operation) {
     case COVER_OPERATION_OPENING:
-      dir = 1.0f;
-      action_dur = this->open_net_duration_;
+      direction = 1;
+      action_duration = this->open_net_duration_;
       tilt_boundary = this->tilt_duration;
       break;
     case COVER_OPERATION_CLOSING:
-      dir = -1.0f;
-      action_dur = this->close_net_duration_;
+      direction = -1;
+      action_duration = this->close_net_duration_;
       tilt_boundary = 0;
       break;
     default:
@@ -164,16 +164,17 @@ void VenetianBlinds::recompute_position_() {
   }
 
   const uint32_t now = millis();
-  this->exact_tilt_ += dir * (now - this->last_recompute_time_);
-  this->exact_tilt_ = clamp(this->exact_tilt_, uint32_t(0), this->tilt_duration);
-  const uint32_t tilt_overflow = dir * (this->tilt - tilt_boundary);
+  this->exact_tilt_ += direction * (now - this->last_recompute_time_);
+  this->exact_tilt_ = clamp(this->exact_tilt_, 0, (int)this->tilt_duration);
+  const int tilt_overflow = direction * (this->tilt - tilt_boundary);
   if (tilt_overflow > 0) {
-    this->exact_position_ += dir * tilt_overflow;
-    this->exact_position_ = clamp(this->exact_position_, uint32_t(0), action_dur);
+    this->exact_position_ += direction * tilt_overflow;
+    this->exact_position_ = clamp(this->exact_position_, 0, action_duration);
   }
 
-  this->position = this->exact_position_ / action_dur;
-  this->tilt = this->exact_tilt_ / this->tilt_duration;
+  this->position = this->exact_position_ / (float)action_duration;
+  this->tilt = this->exact_tilt_ / (float)this->tilt_duration;
+
   this->last_recompute_time_ = now;
 }
 
