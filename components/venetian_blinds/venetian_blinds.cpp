@@ -13,7 +13,13 @@ void VenetianBlinds::dump_config() {
     LOG_COVER("", "Venetian Blinds", this);
     ESP_LOGCONFIG(TAG, "  Open Duration: %.1fs", this->open_duration / 1e3f);
     ESP_LOGCONFIG(TAG, "  Close Duration: %.1fs", this->close_duration / 1e3f);
-    ESP_LOGCONFIG(TAG, "  Tilt Duration: %.1fs", this->tilt_duration / 1e3f);
+    ESP_LOGCONFIG(TAG, "  Tilt Open/Close Duration: %.1fs", this->tilt_duration / 1e3f);
+    ESP_LOGCONFIG(TAG, "  Open Net Duration: %.1fs", this->open_net_duration_ / 1e3f);
+    ESP_LOGCONFIG(TAG, "  Close Net Duration: %.1fs", this->close_net_duration_ / 1e3f);
+    ESP_LOGCONFIG(TAG, "  Position: %.1f%", this->position);
+    ESP_LOGCONFIG(TAG, "  Exact Position: %.1fs", this->exact_position_ / 1e3f);
+    ESP_LOGCONFIG(TAG, "  Tilt: %.1f%", this->tilt);
+    ESP_LOGCONFIG(TAG, "  Exact Tilt: %.1fs", this->exact_tilt_ / 1e3f);
 }
 
 void VenetianBlinds::setup() {
@@ -24,6 +30,11 @@ void VenetianBlinds::setup() {
         this->position = 0.0;
         this->tilt = 0.0;
     }
+    this->open_net_duration_ = this->open_duration - this->tilt_duration;
+    this->close_net_duration_ = this->close_duration - this->tilt_duration;
+
+    this->exact_position_ = this->close_net_duration_ * this->position; // position factor should be same for both open and close even if both durations are different
+    this->exact_tilt_ = this->tilt_duration * this->tilt;
 }
 
 CoverTraits VenetianBlinds::get_traits() {
