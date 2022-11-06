@@ -165,8 +165,8 @@ void VenetianBlinds::recompute_position_() {
 
   const uint32_t now = millis();
   this->exact_tilt_ += direction * (now - this->last_recompute_time_);
-  this->exact_tilt_ = clamp(this->exact_tilt_, 0, (int)this->tilt_duration);
   const int tilt_overflow = direction * (this->exact_tilt_ - tilt_boundary);
+  this->exact_tilt_ = clamp(this->exact_tilt_, 0, (int)this->tilt_duration);
   if (tilt_overflow > 0) {
     this->exact_position_ += direction * tilt_overflow;
     this->exact_position_ = clamp(this->exact_position_, 0, action_duration);
