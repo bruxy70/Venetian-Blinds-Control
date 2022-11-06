@@ -51,19 +51,20 @@ void VenetianBlinds::control(const CoverCall &call) {
         this->publish_state();
     }
     if (call.get_position().has_value()) {
-        auto pos = *call.get_position();
-        if (pos != this->position) {
-            auto op = pos < this->position ? COVER_OPERATION_CLOSING : COVER_OPERATION_OPENING;
-            this->target_position_ = pos * this->close_net_duration_; // TODO: FIXME to use based on operation
-            this->start_direction_(op);
+        auto requested_position = *call.get_position();
+        if (requested_position != this->position) {
+            auto operation = requested_position < this->position ? COVER_OPERATION_CLOSING : COVER_OPERATION_OPENING;
+            auto operation_duration = requested_position < this->position ? this->open_net_duration_ : this->close_net_duration_;
+            this->target_position_ = requested_position * operation_duration;
+            this->start_direction_(operation);
         }
     }
     if(call.get_tilt().has_value()) {
-        auto tilt = *call.get_tilt();
-        if (tilt != this->tilt) {
-            auto op = tilt < this->tilt ? COVER_OPERATION_CLOSING : COVER_OPERATION_OPENING;
-            this->target_tilt_ = tilt * this->tilt_duration;
-            this->start_direction_(op);
+        auto requested_tilt = *call.get_tilt();
+        if (requested_tilt != this->tilt) {
+            auto operation = requested_tilt < this->tilt ? COVER_OPERATION_CLOSING : COVER_OPERATION_OPENING;
+            this->target_tilt_ = requested_tilt * this->tilt_duration;
+            this->start_direction_(operation);
         }
     }
 }
@@ -99,9 +100,9 @@ void VenetianBlinds::stop_prev_trigger_() {
 bool VenetianBlinds::is_at_target_() const {
   switch (this->current_operation) {
     case COVER_OPERATION_OPENING:
-      return this->position >= this->target_position_;
+      return this->exact_position_ >= this->target_position_ && this->exact_tilt_ >= this->target_tilt_;
     case COVER_OPERATION_CLOSING:
-      return this->position <= this->target_position_;
+      return this->exact_position_ <= this->target_position_ && this->exact_tilt_ <= this->target_tilt_;
     case COVER_OPERATION_IDLE:
     default:
       return true;
