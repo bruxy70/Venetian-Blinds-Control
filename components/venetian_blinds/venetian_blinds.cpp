@@ -15,6 +15,8 @@ void VenetianBlinds::dump_config() {
   ESP_LOGCONFIG(TAG, "  Close Duration: %.1fs", this->close_duration / 1e3f);
   ESP_LOGCONFIG(TAG, "  Tilt Open/Close Duration: %.1fs",
                 this->tilt_duration / 1e3f);
+  ESP_LOGCONFIG(TAG, "  Actuator Activation Duration: %.1fs",
+                this->actuator_activation_duration / 1e3f);
   ESP_LOGCONFIG(TAG, "  Open Net Duration: %.1fs",
                 this->open_net_duration_ / 1e3f);
   ESP_LOGCONFIG(TAG, "  Close Net Duration: %.1fs",
@@ -166,6 +168,14 @@ void VenetianBlinds::recompute_position_() {
   if (this->current_operation == COVER_OPERATION_IDLE)
     return;
 
+  const uint32_t now = millis();
+
+  // when actuator is still activating, the position is not changed
+  const uint32_t actuator_start_time = this->start_dir_time_ + this->actuator_activation_duration;
+  const bool actuator_is_activating = now <= actuator_start_time;
+  if (actuator_is_activating)
+    return;
+
   int direction;
   int action_duration;
   int tilt_boundary;
@@ -184,19 +194,25 @@ void VenetianBlinds::recompute_position_() {
     return;
   }
 
-  const uint32_t now = millis();
-
-  this->exact_tilt_ += direction * (now - this->last_recompute_time_);
+  /*
+   * when actuator-activation finished between "start_direction_" and this
+   * invocation of "recompute_position_", movement just started and the cover
+   * moved for (now - actuator_start_time)
+   */
+  const uint32_t movement_start_time = this->last_recompute_time_ < actuator_start_time ?
+      actuator_start_time : this->last_recompute_time_;
+  const uint32_t cover_moving_time = now - movement_start_time;
+  this->exact_tilt_ += direction * cover_moving_time;
   const int tilt_overflow = direction * (this->exact_tilt_ - tilt_boundary);
   this->exact_tilt_ = clamp(this->exact_tilt_, 0, (int)this->tilt_duration);
   if (tilt_overflow > 0) {
     this->exact_position_ += direction * tilt_overflow;
     this->exact_position_ = clamp(this->exact_position_, 0, action_duration);
   }
-
+    
   this->position = this->exact_position_ / (float)action_duration;
   this->tilt = this->exact_tilt_ / (float)this->tilt_duration;
-
+  
   this->last_recompute_time_ = now;
 }
 
