@@ -19,6 +19,7 @@ public:
   void set_open_duration(uint32_t open) { this->open_duration = open; }
   void set_close_duration(uint32_t close) { this->close_duration = close; }
   void set_tilt_duration(uint32_t tilt) { this->tilt_duration = tilt; }
+  void set_actuator_activation_duration(uint32_t actuator_activation) { this->actuator_activation_duration = actuator_activation; }
   void set_assumed_state(bool value) { this->assumed_state = value; }
 
 protected:
@@ -28,6 +29,7 @@ protected:
   uint32_t open_duration;
   uint32_t close_duration;
   uint32_t tilt_duration;
+  uint32_t actuator_activation_duration;
   bool assumed_state{false};
 
 private:
