@@ -209,10 +209,10 @@ void VenetianBlinds::recompute_position_() {
     this->exact_position_ += direction * tilt_overflow;
     this->exact_position_ = clamp(this->exact_position_, 0, action_duration);
   }
-    
+
   this->position = this->exact_position_ / (float)action_duration;
   this->tilt = this->exact_tilt_ / (float)this->tilt_duration;
-  
+
   this->last_recompute_time_ = now;
 }
 
