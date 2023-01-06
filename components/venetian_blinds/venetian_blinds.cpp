@@ -35,8 +35,10 @@ void VenetianBlinds::setup() {
     this->position = 0.0;
     this->tilt = 0.0;
   }
-  this->open_net_duration_ = this->open_duration - this->tilt_duration;
-  this->close_net_duration_ = this->close_duration - this->tilt_duration;
+  const uint32_t tilt_and_activation_duration = this->tilt_duration +
+      this->actuator_activation_duration;
+  this->open_net_duration_ = this->open_duration - tilt_and_activation_duration;
+  this->close_net_duration_ = this->close_duration - tilt_and_activation_duration;
 
   this->exact_position_ =
       this->close_net_duration_ *
