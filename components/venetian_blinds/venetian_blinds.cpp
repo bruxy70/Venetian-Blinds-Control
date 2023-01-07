@@ -58,10 +58,12 @@ void VenetianBlinds::control(const CoverCall &call) {
   }
   if (call.get_position().has_value()) {
     auto requested_position = *call.get_position();
-    if (requested_position != this->position) {
+    if ((requested_position != this->position) ||
+        (requested_position == 0 && this->tilt > 0)) {
       cover::CoverOperation operation;
       uint32_t operation_duration;
-      if (requested_position < this->position) {
+      if ((requested_position < this->position) ||
+          (requested_position == 0)) {
         operation = COVER_OPERATION_CLOSING;
         operation_duration = this->close_net_duration_;
         this->target_tilt_ = 0.0f;
