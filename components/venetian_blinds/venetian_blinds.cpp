@@ -51,6 +51,7 @@ CoverTraits VenetianBlinds::get_traits() {
   auto traits = CoverTraits();
   traits.set_supports_position(true);
   traits.set_supports_tilt(true);
+  traits.set_supports_stop(true);
   traits.set_is_assumed_state(this->assumed_state);
   return traits;
 }
