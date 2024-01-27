@@ -21,7 +21,10 @@ external_components:
     components: [venetian_blinds]
 ```
 
-Then you can configure the blinds. For the parameters and use refer to the [Time Based Cover](https://esphome.io/components/cover/time_based.html), with one additional parameter for `tilt_duration`.
+Then you can configure the blinds. For the parameters and use refer to the [Time Based Cover](https://esphome.io/components/cover/time_based.html), with two additional parameters:
+- **tilt_duration** (Required, Time): The amount of time it takes, to tilt between 0% and 100%
+- **actuator_activation_duration** (Optional, Time): The amount of time it takes for the actuator/motor to start moving. Defaults to `0`.
+Example: The Somfy J4 WT DataSheet states `Continuous orders of at least 200 ms must be sent to the drive to ensure proper execution.` The amount of time it takes is nondeterministic. Set `actuator_activation_duration: 200ms` for the blinds to move definitely.
 
 Configuration example:
 
