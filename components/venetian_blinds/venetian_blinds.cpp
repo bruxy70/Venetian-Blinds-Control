@@ -10,7 +10,7 @@ static const char *TAG = "venetian_blinds.cover";
 using namespace esphome::cover;
 
 void VenetianBlinds::dump_config() {
-  LOG_COVER("", "Time Based Cover", this);
+  LOG_COVER("", "Venetian Blinds", this);
   ESP_LOGCONFIG(TAG, "  Open Duration: %.1fs", this->open_duration_ / 1e3f);
   ESP_LOGCONFIG(TAG, "  Close Duration: %.1fs", this->close_duration_ / 1e3f);
 }
