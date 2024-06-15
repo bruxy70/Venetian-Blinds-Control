@@ -1,4 +1,4 @@
-#include "time_based_cover.h"
+#include "venetian_blinds.h"
 #include "esphome/core/log.h"
 #include "esphome/core/hal.h"
 
