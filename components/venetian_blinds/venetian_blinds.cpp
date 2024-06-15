@@ -49,7 +49,7 @@ void VenetianBlinds::loop() {
   }
 }
 float VenetianBlinds::get_setup_priority() const { return setup_priority::DATA; }
-CoverTraits TimeBasedCover::get_traits() {
+CoverTraits VenetianBlinds::get_traits() {
   auto traits = CoverTraits();
   traits.set_supports_stop(true);
   traits.set_supports_position(true);
