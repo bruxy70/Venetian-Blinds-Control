@@ -8,6 +8,8 @@ from esphome.const import (CONF_ASSUMED_STATE, CONF_CLOSE_ACTION,
 
 CONF_TILT_DURATION = "tilt_duration"
 CONF_ACTUATOR_ACTIVATION_DURATION = "actuator_activation_duration"
+CONF_HAS_BUILT_IN_ENDSTOP = "has_built_in_endstop"
+CONF_MANUAL_CONTROL = "manual_control"
 
 venetian_blinds_ns = cg.esphome_ns.namespace('venetian_blinds')
 VenetianBlinds = venetian_blinds_ns.class_('VenetianBlinds', cover.Cover, cg.Component)
