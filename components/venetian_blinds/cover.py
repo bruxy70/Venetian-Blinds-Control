@@ -17,7 +17,7 @@ VenetianBlinds = venetian_blinds_ns.class_('VenetianBlinds', cover.Cover, cg.Com
 
 CONFIG_SCHEMA = cover.COVER_SCHEMA.extend(
     {
-        cv.GenerateID(): cv.declare_id(TimeBasedCover),
+        cv.GenerateID(): cv.declare_id(VenetianBlinds),
         cv.Required(CONF_STOP_ACTION): automation.validate_automation(single=True),
         cv.Required(CONF_OPEN_ACTION): automation.validate_automation(single=True),
         cv.Required(CONF_OPEN_DURATION): cv.positive_time_period_milliseconds,
