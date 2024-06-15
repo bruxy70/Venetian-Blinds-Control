@@ -47,6 +47,42 @@ void VenetianBlinds::setup() {
   this->exact_tilt_ = this->tilt_duration * this->tilt;
 }
 
+void VenetianBlinds::loop() {
+  if (this->current_operation == COVER_OPERATION_IDLE)
+    return;
+
+  const uint32_t now = millis();
+
+  // Recompute position every loop cycle
+  this->recompute_position_();
+
+  if (this->is_at_target_()) {
+    this->start_direction_(COVER_OPERATION_IDLE);
+    this->publish_state();
+  }
+
+/*
+  if (this->is_at_target_()) {
+    if (this->has_built_in_endstop_ &&
+        (this->target_position_ == COVER_OPEN || this->target_position_ == COVER_CLOSED)) {
+      // Don't trigger stop, let the cover stop by itself.
+      this->current_operation = COVER_OPERATION_IDLE;
+    } else {
+      this->start_direction_(COVER_OPERATION_IDLE);
+    }
+    this->publish_state();
+  }
+*/
+
+  // Send current position every second
+  if (now - this->last_publish_time_ > 1000) {
+    this->publish_state(false);
+    this->last_publish_time_ = now;
+  }
+}
+
+float VenetianBlinds::get_setup_priority() const { return setup_priority::DATA; }
+
 CoverTraits VenetianBlinds::get_traits() {
   auto traits = CoverTraits();
   traits.set_supports_position(true);
@@ -91,27 +127,6 @@ void VenetianBlinds::control(const CoverCall &call) {
       this->target_tilt_ = requested_tilt * this->tilt_duration;
       this->start_direction_(operation);
     }
-  }
-}
-
-void VenetianBlinds::loop() {
-  if (this->current_operation == COVER_OPERATION_IDLE)
-    return;
-
-  const uint32_t now = millis();
-
-  // Recompute position every loop cycle
-  this->recompute_position_();
-
-  if (this->is_at_target_()) {
-    this->start_direction_(COVER_OPERATION_IDLE);
-    this->publish_state();
-  }
-
-  // Send current position every second
-  if (now - this->last_publish_time_ > 1000) {
-    this->publish_state(false);
-    this->last_publish_time_ = now;
   }
 }
 

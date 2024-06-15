@@ -11,6 +11,7 @@ public:
   void setup() override;
   void loop() override;
   void dump_config() override;
+  float get_setup_priority() const override;
   cover::CoverTraits get_traits() override;
   void control(const cover::CoverCall &call) override;
   Trigger<> *get_open_trigger() const { return this->open_trigger; }
