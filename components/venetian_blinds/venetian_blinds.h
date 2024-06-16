@@ -19,6 +19,7 @@ class VenetianBlinds : public cover::Cover, public Component {
   Trigger<> *get_stop_trigger() const { return this->stop_trigger_; }
   void set_open_duration(uint32_t open_duration) { this->open_duration_ = open_duration; }
   void set_close_duration(uint32_t close_duration) { this->close_duration_ = close_duration; }
+  void set_tilt_duration(uint32_t tilt) { this->tilt_duration = tilt; }
   cover::CoverTraits get_traits() override;
   void set_has_built_in_endstop(bool value) { this->has_built_in_endstop_ = value; }
   void set_manual_control(bool value) { this->manual_control_ = value; }
@@ -39,12 +40,15 @@ class VenetianBlinds : public cover::Cover, public Component {
   Trigger<> *close_trigger_{new Trigger<>()};
   uint32_t close_duration_;
   Trigger<> *stop_trigger_{new Trigger<>()};
-
+  uint32_t tilt_duration;
+  
   Trigger<> *prev_command_trigger_{nullptr};
   uint32_t last_recompute_time_{0};
   uint32_t start_dir_time_{0};
   uint32_t last_publish_time_{0};
   float target_position_{0};
+  float target_tilt_{0};
+
   bool has_built_in_endstop_{false};
   bool manual_control_{false};
   bool assumed_state_{false};

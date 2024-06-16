@@ -13,6 +13,7 @@ void VenetianBlinds::dump_config() {
   LOG_COVER("", "Venetian Blinds", this);
   ESP_LOGCONFIG(TAG, "  Open Duration: %.1fs", this->open_duration_ / 1e3f);
   ESP_LOGCONFIG(TAG, "  Close Duration: %.1fs", this->close_duration_ / 1e3f);
+  ESP_LOGCONFIG(TAG, "  Tilt Duration: %.1fs", this->tilt_duration / 1e3f);
 }
 void VenetianBlinds::setup() {
   auto restore = this->restore_state_();
@@ -20,6 +21,7 @@ void VenetianBlinds::setup() {
     restore->apply(this);
   } else {
     this->position = 0.5f;
+    this->tilt = 0.0f;
   }
 }
 void VenetianBlinds::loop() {
@@ -53,6 +55,7 @@ CoverTraits VenetianBlinds::get_traits() {
   auto traits = CoverTraits();
   traits.set_supports_stop(true);
   traits.set_supports_position(true);
+  traits.set_supports_tilt(this->tilt_duration > 0);
   traits.set_supports_toggle(true);
   traits.set_is_assumed_state(this->assumed_state_);
   return traits;
@@ -86,12 +89,14 @@ void VenetianBlinds::control(const CoverCall &call) {
         auto op = pos == COVER_CLOSED ? COVER_OPERATION_CLOSING : COVER_OPERATION_OPENING;
         this->position = pos == COVER_CLOSED ? COVER_OPEN : COVER_CLOSED;
         this->target_position_ = pos;
+        this->target_tilt_ = pos == COVER_CLOSED ? 0.0f : 1.0f;
         this->start_direction_(op);
       }
       // for covers with built in end stop, we should send the command again
       if (this->has_built_in_endstop_ && (pos == COVER_OPEN || pos == COVER_CLOSED)) {
         auto op = pos == COVER_CLOSED ? COVER_OPERATION_CLOSING : COVER_OPERATION_OPENING;
         this->target_position_ = pos;
+        this->target_tilt_ = pos == COVER_CLOSED ? 0.0f : 1.0f;
         this->start_direction_(op);
       }
     } else {
@@ -100,9 +105,21 @@ void VenetianBlinds::control(const CoverCall &call) {
         this->position = pos == COVER_CLOSED ? COVER_OPEN : COVER_CLOSED;
       }
       this->target_position_ = pos;
+      this->target_tilt_ = pos == COVER_CLOSED ? 0.0f : 1.0f;
       this->start_direction_(op);
     }
   }
+  if (call.get_tilt().has_value()) {
+    auto tilt = *call.get_tilt();
+    if (tilt != this->tilt) {
+      // not at target
+      auto op = requested_tilt < this->tilt ? COVER_OPERATION_CLOSING
+                                            : COVER_OPERATION_OPENING;
+      this->target_position = this->position;
+      this->target_tilt_ = tilt;
+      this->start_direction_(op);
+    }
+  }  
 }
 void VenetianBlinds::stop_prev_trigger_() {
   if (this->prev_command_trigger_ != nullptr) {
@@ -113,9 +130,11 @@ void VenetianBlinds::stop_prev_trigger_() {
 bool VenetianBlinds::is_at_target_() const {
   switch (this->current_operation) {
     case COVER_OPERATION_OPENING:
-      return this->position >= this->target_position_;
+      return this->position >= this->target_position_ &&
+             this->tilt >= this->target_tilt_;
     case COVER_OPERATION_CLOSING:
-      return this->position <= this->target_position_;
+      return this->position <= this->target_position_ &&
+             this->tilt <= this->target_tilt;
     case COVER_OPERATION_IDLE:
     default:
       return true;
@@ -173,9 +192,14 @@ void VenetianBlinds::recompute_position_() {
   }
 
   const uint32_t now = millis();
-  this->position += dir * (now - this->last_recompute_time_) / action_dur;
-  this->position = clamp(this->position, 0.0f, 1.0f);
 
+  if (this->tilt_duration > 0 && this->tilt != this->target_tilt) {
+    this->tilt += dir * (now - this->last_recompute_time_) / this->tilt_duration;
+    this->tilt = clamp(this->tilt, 0.0f, 1.0f);
+  } else {
+    this->position += dir * (now - this->last_recompute_time_) / action_dur;
+    this->position = clamp(this->position, 0.0f, 1.0f);
+  }
   this->last_recompute_time_ = now;
 }
 
