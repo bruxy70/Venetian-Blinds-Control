@@ -136,10 +136,10 @@ bool VenetianBlinds::is_at_target_() const {
   switch (this->current_operation) {
     case COVER_OPERATION_OPENING:
       return this->position >= this->target_position_ &&
-             (this->tilt_duration == 0 || this->tilt >= this->target_tilt_);
+             (this->tilt_duration_ == 0 || this->tilt >= this->target_tilt_);
     case COVER_OPERATION_CLOSING:
       return this->position <= this->target_position_ &&
-             (this->tilt_duration == 0 || this->tilt <= this->target_tilt_);
+             (this->tilt_duration_ == 0 || this->tilt <= this->target_tilt_);
     case COVER_OPERATION_IDLE:
     default:
       return true;
