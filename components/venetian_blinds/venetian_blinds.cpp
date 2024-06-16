@@ -19,13 +19,13 @@ void VenetianBlinds::dump_config() {
 
 }
 void VenetianBlinds::setup() {
-//  auto restore = this->restore_state_();
-//  if (restore.has_value()) {
-//    restore->apply(this);
-//  } else {
+  auto restore = this->restore_state_();
+  if (restore.has_value()) {
+    restore->apply(this);
+  } else {
     this->position = 0.5f;
     this->tilt = 0.0f;
-//  }
+  }
 }
 void VenetianBlinds::loop() {
   if (this->current_operation == COVER_OPERATION_IDLE)
@@ -114,7 +114,7 @@ void VenetianBlinds::control(const CoverCall &call) {
       this->start_direction_(op);
     }
   }
-  if (call.get_tilt().has_value()) {
+  if (this->tilt_duration_ > 0 && call.get_tilt().has_value()) {
     auto tilt = *call.get_tilt();
     if (tilt != this->tilt) {
       // not at target

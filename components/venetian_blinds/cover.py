@@ -21,7 +21,7 @@ CONFIG_SCHEMA = cover.COVER_SCHEMA.extend(
         cv.Required(CONF_OPEN_DURATION): cv.positive_time_period_milliseconds,
         cv.Required(CONF_CLOSE_ACTION): automation.validate_automation(single=True),
         cv.Required(CONF_CLOSE_DURATION): cv.positive_time_period_milliseconds,
-        cv.Optional(CONF_TILT_DURATION, default="0s"): cv.positive_time_period_milliseconds,
+        cv.Optional(CONF_TILT_DURATION, default="0ms"): cv.positive_time_period_milliseconds,
         cv.Optional(CONF_HAS_BUILT_IN_ENDSTOP, default=False): cv.boolean,
         cv.Optional(CONF_MANUAL_CONTROL, default=False): cv.boolean,
         cv.Optional(CONF_ASSUMED_STATE, default=True): cv.boolean,
