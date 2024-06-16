@@ -11,9 +11,12 @@ using namespace esphome::cover;
 
 void VenetianBlinds::dump_config() {
   LOG_COVER("", "Venetian Blinds", this);
+  ESP_LOGCONFIG(TAG, "  Position: %.1f%", this->position);
+  ESP_LOGCONFIG(TAG, "  Tilt: %.1f%", this->tilt);
   ESP_LOGCONFIG(TAG, "  Open Duration: %.1fs", this->open_duration_ / 1e3f);
   ESP_LOGCONFIG(TAG, "  Close Duration: %.1fs", this->close_duration_ / 1e3f);
   ESP_LOGCONFIG(TAG, "  Tilt Duration: %.1fs", this->tilt_duration / 1e3f);
+
 }
 void VenetianBlinds::setup() {
   auto restore = this->restore_state_();
@@ -113,9 +116,9 @@ void VenetianBlinds::control(const CoverCall &call) {
     auto tilt = *call.get_tilt();
     if (tilt != this->tilt) {
       // not at target
-      auto op = requested_tilt < this->tilt ? COVER_OPERATION_CLOSING
-                                            : COVER_OPERATION_OPENING;
-      this->target_position = this->position;
+      auto op = tilt < this->tilt ? COVER_OPERATION_CLOSING
+                                  : COVER_OPERATION_OPENING;
+      this->target_position_ = this->position;
       this->target_tilt_ = tilt;
       this->start_direction_(op);
     }
@@ -134,7 +137,7 @@ bool VenetianBlinds::is_at_target_() const {
              this->tilt >= this->target_tilt_;
     case COVER_OPERATION_CLOSING:
       return this->position <= this->target_position_ &&
-             this->tilt <= this->target_tilt;
+             this->tilt <= this->target_tilt_;
     case COVER_OPERATION_IDLE:
     default:
       return true;
@@ -193,7 +196,7 @@ void VenetianBlinds::recompute_position_() {
 
   const uint32_t now = millis();
 
-  if (this->tilt_duration > 0 && this->tilt != this->target_tilt) {
+  if (this->tilt_duration > 0 && this->tilt != this->target_tilt_) {
     this->tilt += dir * (now - this->last_recompute_time_) / this->tilt_duration;
     this->tilt = clamp(this->tilt, 0.0f, 1.0f);
   } else {
