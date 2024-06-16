@@ -21,10 +21,6 @@ void VenetianBlinds::dump_config() {
                 this->open_net_duration_ / 1e3f);
   ESP_LOGCONFIG(TAG, "  Close Net Duration: %.1fs",
                 this->close_net_duration_ / 1e3f);
-  ESP_LOGCONFIG(TAG, "  Position: %.1f%", this->position);
-  ESP_LOGCONFIG(TAG, "  Tilt: %.1f%", this->tilt);
-  ESP_LOGCONFIG(TAG, "  Exact Position: %.1fs", this->exact_position_ / 1e3f);
-  ESP_LOGCONFIG(TAG, "  Exact Tilt: %.1fs", this->exact_tilt_ / 1e3f);
 }
 
 void VenetianBlinds::setup() {
