@@ -40,7 +40,7 @@ class VenetianBlinds : public cover::Cover, public Component {
   Trigger<> *close_trigger_{new Trigger<>()};
   uint32_t close_duration_;
   Trigger<> *stop_trigger_{new Trigger<>()};
-  uint32_t tilt_duration;
+  uint32_t tilt_duration_;
   
   Trigger<> *prev_command_trigger_{nullptr};
   uint32_t last_recompute_time_{0};
