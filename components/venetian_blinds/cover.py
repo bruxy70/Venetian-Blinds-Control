@@ -46,6 +46,7 @@ async def to_code(config):
     await automation.build_automation(
         var.get_close_trigger(), [], config[CONF_CLOSE_ACTION]
     )
+
     cg.add(var.set_tilt_duration(config[CONF_TILT_DURATION]))
 
     cg.add(var.set_has_built_in_endstop(config[CONF_HAS_BUILT_IN_ENDSTOP]))

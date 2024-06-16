@@ -19,7 +19,7 @@ class VenetianBlinds : public cover::Cover, public Component {
   Trigger<> *get_stop_trigger() const { return this->stop_trigger_; }
   void set_open_duration(uint32_t open_duration) { this->open_duration_ = open_duration; }
   void set_close_duration(uint32_t close_duration) { this->close_duration_ = close_duration; }
-  void set_tilt_duration(uint32_t tilt) { this->tilt_duration = tilt; }
+  void set_tilt_duration(uint32_t tilt_duration) { this->tilt_duration_ = tilt_duration; }
   cover::CoverTraits get_traits() override;
   void set_has_built_in_endstop(bool value) { this->has_built_in_endstop_ = value; }
   void set_manual_control(bool value) { this->manual_control_ = value; }
